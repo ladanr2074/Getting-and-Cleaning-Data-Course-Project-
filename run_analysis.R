@@ -1,8 +1,11 @@
+
 filesPath <- "/Users/LadanMac/Desktop/coursera/geting and cleaning data /data/UCI HAR Dataset"
 setwd(filespath)
+
 if(!file.exists("./data")){dir.create("./data")}
 fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 download.file(fileUrl,destfile="./data/Dataset.zip",method="curl")
+
 unzip(zipfile = "./data/Dataset.zip",exdir="./data")
 
 library(dplyr)
@@ -36,7 +39,6 @@ alldataSubjAct<- cbind(alldataSubject, alldataActivity)
 dataTable <- cbind(alldataSubjAct, dataTable)
 
 
-
 dataFeaturesMeanStd <- grep("mean\\(\\)|std\\(\\)",dataFeatures$featureName,value=TRUE)
 
 dataFeaturesMeanStd <- union(c("subject","activityNumber"), dataFeaturesMeanStd)
@@ -48,7 +50,6 @@ dataTable$activityName <- as.character(dataTable$activityName)
 dataTable$activityName <- as.character(dataTable$activityName)
 dataAggr<- aggregate(. ~ subject - activityName, data = dataTable, mean) 
 dataTable<- tbl_df(arrange(dataAggr,subject,activityName))
-
 
 head(str(dataTable),2)
 names(dataTable)<-gsub("std()", "SD", names(dataTable))
