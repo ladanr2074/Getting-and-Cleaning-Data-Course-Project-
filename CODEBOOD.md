@@ -115,19 +115,19 @@ dataActivityTest  <- tbl_df(read.table(file.path(filesPath, "test" , "Y_test.txt
 dataTrain <- tbl_df(read.table(file.path(filesPath, "train", "X_train.txt" )))
 dataTest  <- tbl_df(read.table(file.path(filesPath, "test" , "X_test.txt" )))
 
-1. Merges the training and the test sets to create one data set
+##1. Merges the training and the test sets to create one data set
 
-#merge the training and the test sets by row for Activity and Subject
+##merge the training and the test sets by row for Activity and Subject
 
 alldataSubject <- rbind(dataSubjectTrain, dataSubjectTest)
 
-#name the variables
+###name the variables
 
 setnames(alldataSubject, "V1", "subject")
 alldataActivity<- rbind(dataActivityTrain, dataActivityTest)
 setnames(alldataActivity, "V1", "activityNumber")
 
-#combing the Data training and Test files 
+####combing the Data training and Test files 
 
 dataTable <- rbind(dataTrain, dataTest)
 
@@ -138,32 +138,37 @@ colnames(dataTable) <- dataFeatures$featureName
 activityLabels<- tbl_df(read.table(file.path(filesPath, "activity_labels.txt")))
 setnames(activityLabels, names(activityLabels), c("activityNumber","activityName"))
 
-#merging columns for Subject and Activity
+####merging columns for Subject and Activity
 
 
 alldataSubjAct<- cbind(alldataSubject, alldataActivity)
 dataTable <- cbind(alldataSubjAct, dataTable)
 
 
-2. Extracts only the measurements on the mean and standard deviation for each measurement
+##2. Extracts only the measurements on the mean and standard deviation for each measurement
 
 dataFeaturesMeanStd <- grep("mean\\(\\)|std\\(\\)",dataFeatures$featureName,value=TRUE)
 
 dataFeaturesMeanStd <- union(c("subject","activityNumber"), dataFeaturesMeanStd)
+
 dataTable<- subset(dataTable,select=dataFeaturesMeanStd) 
 
 
-3. Uses descriptive activity names to name the activities in the data set
+##3. Uses descriptive activity names to name the activities in the data set
 
 dataTable <- merge(activityLabels, dataTable , by="activityNumber", all.x=TRUE)
-dataTable$activityName <- as.character(dataTable$activityName)
 
 dataTable$activityName <- as.character(dataTable$activityName)
+
+
+dataTable$activityName <- as.character(dataTable$activityName)
+
 dataAggr<- aggregate(. ~ subject - activityName, data = dataTable, mean) 
+
 dataTable<- tbl_df(arrange(dataAggr,subject,activityName))
 
 
-4. Appropriately labels the data set with descriptive variable names
+##4. Appropriately labels the data set with descriptive variable names
 
 1. leading t or f is based on time or frequency measurements.
 
@@ -183,19 +188,32 @@ dataTable<- tbl_df(arrange(dataAggr,subject,activityName))
 
 The units given are g’s for the accelerometer and rad/sec for the gyro and g/sec and rad/sec/sec for the corresponding jerks.
 
-#first looked at head of the data to see the name before the change 
+###first looked at head of the data to see the name before the change 
 head(str(dataTable),2)
-#descriptive variable names
+###descriptive variable names
+
 names(dataTable)<-gsub("std()", "SD", names(dataTable))
+
 names(dataTable)<-gsub("mean()", "MEAN", names(dataTable))
+
 names(dataTable)<-gsub("^t", "time", names(dataTable))
+
 names(dataTable)<-gsub("^f", "frequency", names(dataTable))
+
 names(dataTable)<-gsub("Acc", "Accelerometer", names(dataTable))
+
 names(dataTable)<-gsub("Gyro", "Gyroscope", names(dataTable))
+
 names(dataTable)<-gsub("Mag", "Magnitude", names(dataTable))
+
 names(dataTable)<-gsub("BodyBody", "Body", names(dataTable))
-# then to check again with the new discriptive names 
+
+###then to check again with the new discriptive names 
+
 head(str(dataTable),6)
-5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject
-# creates the .txt file on the direcotory
+
+##5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject
+
+##### creates the .txt file on the direcotory
+
 write.table(dataTable, "TidyData.txt", row.name=FALSE)
