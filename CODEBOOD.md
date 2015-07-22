@@ -48,7 +48,9 @@ Description of abbreviations of measurements
 The units given are g’s for the accelerometer and rad/sec for the gyro and g/sec and rad/sec/sec for the corresponding jerks.
 These signals were used to estimate variables of the feature vector for each pattern:
 ‘-XYZ’ is used to denote 3-axial signals in the X, Y and Z directions. They total 33 measurements including the 3 dimensions - the X,Y, and Z axes.
-tBodyAcc-XYZ tGravityAcc-XYZ tBodyAccJerk-XYZ * * tBodyGyro-XYZ
+
+tBodyAcc-XYZ tGravityAcc-XYZ tBodyAccJerk-XYZ
+tBodyGyro-XYZ
 tBodyGyroJerk-XYZ
 tBodyAccMag
 tGravityAccMag
@@ -69,12 +71,14 @@ The experiments have been carried out with a group of 30 volunteers within an ag
 
 The sensor signals (accelerometer and gyroscope) were pre-processed by applying noise filters and then sampled in fixed-width sliding windows. From each window, a vector of features was obtained by calculating variables from the time and frequency domain.
 Download the Data and unziping
+
 filesPath <- "/Users/LadanMac/Desktop/coursera/geting and cleaning data /data/UCI HAR Dataset"
 setwd(filespath)
 if(!file.exists("./data")){dir.create("./data")}
 fileUrl <- "https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip"
 download.file(fileUrl,destfile="./data/Dataset.zip",method="curl")
 unzip(zipfile = "./data/Dataset.zip",exdir="./data")
+
 load the packages
 
 library(dplyr)
@@ -101,6 +105,7 @@ Files in the Dataset Folder that will be used
 5. activity_labels.txt - Links the class labels with their activity name.
 
 Read the above files and create data tables.
+
 dataSubjectTrain <- tbl_df(read.table(file.path(filesPath, "train", "subject_train.txt")))
 dataSubjectTest <- tbl_df(read.table(file.path(filesPath, "test" , "subject_test.txt" )))
 
@@ -109,16 +114,21 @@ dataActivityTest  <- tbl_df(read.table(file.path(filesPath, "test" , "Y_test.txt
 
 dataTrain <- tbl_df(read.table(file.path(filesPath, "train", "X_train.txt" )))
 dataTest  <- tbl_df(read.table(file.path(filesPath, "test" , "X_test.txt" )))
+
 1. Merges the training and the test sets to create one data set
+
 #merge the training and the test sets by row for Activity and Subject
+
 alldataSubject <- rbind(dataSubjectTrain, dataSubjectTest)
 
 #name the variables
+
 setnames(alldataSubject, "V1", "subject")
 alldataActivity<- rbind(dataActivityTrain, dataActivityTest)
 setnames(alldataActivity, "V1", "activityNumber")
 
 #combing the Data training and Test files 
+
 dataTable <- rbind(dataTrain, dataTest)
 
 dataFeatures <- tbl_df(read.table(file.path(filesPath, "features.txt")))
@@ -129,21 +139,32 @@ activityLabels<- tbl_df(read.table(file.path(filesPath, "activity_labels.txt")))
 setnames(activityLabels, names(activityLabels), c("activityNumber","activityName"))
 
 #merging columns for Subject and Activity
+
+
 alldataSubjAct<- cbind(alldataSubject, alldataActivity)
 dataTable <- cbind(alldataSubjAct, dataTable)
+
+
 2. Extracts only the measurements on the mean and standard deviation for each measurement
+
 dataFeaturesMeanStd <- grep("mean\\(\\)|std\\(\\)",dataFeatures$featureName,value=TRUE)
 
 dataFeaturesMeanStd <- union(c("subject","activityNumber"), dataFeaturesMeanStd)
 dataTable<- subset(dataTable,select=dataFeaturesMeanStd) 
+
+
 3. Uses descriptive activity names to name the activities in the data set
+
 dataTable <- merge(activityLabels, dataTable , by="activityNumber", all.x=TRUE)
 dataTable$activityName <- as.character(dataTable$activityName)
 
 dataTable$activityName <- as.character(dataTable$activityName)
 dataAggr<- aggregate(. ~ subject - activityName, data = dataTable, mean) 
 dataTable<- tbl_df(arrange(dataAggr,subject,activityName))
+
+
 4. Appropriately labels the data set with descriptive variable names
+
 1. leading t or f is based on time or frequency measurements.
 
 2. Body = related to body movement.
